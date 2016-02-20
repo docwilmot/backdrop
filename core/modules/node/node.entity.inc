@@ -325,6 +325,9 @@ class NodeStorageController extends EntityDatabaseStorageController {
     }
     // Make sure to update the new revision key for the entity.
     $entity->{$this->revisionKey} = $record->{$this->revisionKey};
+
+    // Mark this revision as the current one.
+    $entity->isDefaultRevision = TRUE;
   }
 
   /**

@@ -212,6 +212,9 @@ class NodeRevisionsTestCase extends BackdropWebTestCase {
       $this->assertText($log, t('Log message found.'));
     }
 
+    // Confirm that this is the default revision.
+    $this->assertTrue($node->isDefaultRevision(), 'Third node revision is the default one.');
+
     // Confirm that revisions revert properly.
     $this->backdropPost("node/$node->nid/revisions/{$nodes[1]->vid}/revert", array(), t('Revert'));
     $this->assertRaw(t('@type %title has been reverted back to the revision from %revision-date.', array(
@@ -221,6 +224,10 @@ class NodeRevisionsTestCase extends BackdropWebTestCase {
     )), 'Revision reverted.');
     $reverted_node = node_load($node->nid);
     $this->assertTrue(($nodes[1]->body[LANGUAGE_NONE][0]['value'] == $reverted_node->body[LANGUAGE_NONE][0]['value']), 'Node reverted correctly.');
+
+    // Confirm that this is not the default version.
+    $node = node_load($node->nid, $node->vid);
+    $this->assertFalse($node->isDefaultRevision(), 'Third node revision is not the default one.');
 
     // Confirm revisions delete properly.
     $this->backdropPost("node/$node->nid/revisions/{$nodes[1]->vid}/delete", array(), t('Delete'));

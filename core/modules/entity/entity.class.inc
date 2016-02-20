@@ -9,6 +9,12 @@
  * Defines a common interface for all entity objects.
  */
 interface EntityInterface {
+   /**
+   * Indicates whether this is the default revision.
+   *
+   * @var bool
+   */
+  public $isDefaultRevision = TRUE;
 
   /**
    * Constructs a new entity object.
@@ -18,6 +24,23 @@ interface EntityInterface {
    *   has bundles, the bundle key has to be specified.
    */
   public function __construct(array $values);
+
+  /**
+   * Returns the revision identifier of the entity.
+   *
+   * @return
+   *   The revision identifier of the entity, or NULL if the entity does not
+   *   have a revision identifier.
+   */
+  public function getRevisionId();
+
+  /**
+   * Checks if this entity is the default revision.
+   *
+   * @return bool
+   *   TRUE if the entity is the default revision, FALSE otherwise.
+   */
+  public function isDefaultRevision();
 
   /**
    * Returns the entity identifier (the entity's machine name or numeric ID).
@@ -163,6 +186,20 @@ abstract class Entity implements EntityInterface {
       $duplicate->{$entity_info['entity keys']['revision']} = NULL;
     }
     return $duplicate;
+  }
+
+  /**
+   * Implements EntityInterface::getRevisionId().
+   */
+  public function getRevisionId() {
+    return NULL;
+  }
+
+  /**
+   * Implements EntityInterface::isDefaultRevision().
+   */
+  public function isDefaultRevision() {
+    return $this->isDefaultRevision;
   }
 }
 
