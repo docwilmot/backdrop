@@ -25,6 +25,16 @@ class Node extends Entity {
   public $vid;
 
   /**
+   * Indicates whether this is the default node revision.
+   *
+   * The default revision of a node is the one loaded when no specific revision
+   * has been specified. Only default revisions are saved to the node table.
+   *
+   * @var boolean
+   */
+  public $isDefaultRevision = TRUE;
+
+  /**
    * The node content type (bundle).
    *
    * @var string
@@ -276,7 +286,16 @@ class NodeStorageController extends EntityDatabaseStorageController {
       }
       else {
         $op = 'update';
-        $return = backdrop_write_record($this->entityInfo['base table'], $entity, $this->idKey);
+        // Update the base node table, but only if this revision is marked as
+        // the default.
+        if ($entity->isDefaultRevision()) {
+          $return = drupal_write_record($this->entityInfo['base table'], $entity, $this->idKey);
+        }
+        else {
+          // @todo, should a different value be returned when saving an entity
+          // with $isDefaultRevision = FALSE?
+          $return = FALSE;
+        }
       }
 
       if ($this->revisionKey) {
@@ -315,19 +334,19 @@ class NodeStorageController extends EntityDatabaseStorageController {
 
     if (empty($entity->{$this->revisionKey}) || !empty($entity->revision)) {
       backdrop_write_record($this->revisionTable, $record);
-      db_update($this->entityInfo['base table'])
-        ->fields(array($this->revisionKey => $record->{$this->revisionKey}))
-        ->condition($this->idKey, $entity->{$this->idKey})
-        ->execute();
+      // Only update the base node table if this revision is the default.
+      if ($entity->isDefaultRevision()) {
+        db_update($this->entityInfo['base table'])
+          ->fields(array($this->revisionKey => $record->{$this->revisionKey}))
+          ->condition($this->idKey, $entity->{$this->idKey})
+          ->execute();
+      }
     }
     else {
       backdrop_write_record($this->revisionTable, $record, $this->revisionKey);
     }
     // Make sure to update the new revision key for the entity.
     $entity->{$this->revisionKey} = $record->{$this->revisionKey};
-
-    // Mark this revision as the current one.
-    $entity->isDefaultRevision = TRUE;
   }
 
   /**
@@ -439,7 +458,12 @@ class NodeStorageController extends EntityDatabaseStorageController {
    * Overrides EntityDatabaseStorageController::postSave().
    */
   function postSave(EntityInterface $node, $update) {
-    node_access_acquire_grants($node, $update);
+    // Update the node access table for this node, but only if it is the
+    // default revision. There's no need to delete existing records if the node
+    // is new.
+    if ($node->isDefaultRevision()) {
+     node_access_acquire_grants($node, $update);
+    }
   }
 
   /**

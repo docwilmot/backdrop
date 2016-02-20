@@ -993,7 +993,7 @@ function node_revision_delete($revision_id) {
   if ($revision = node_load(NULL, $revision_id)) {
     // Prevent deleting the current revision.
     $node = node_load($revision->nid);
-    if ($revision_id == $node->vid) {
+    if ($revision->isDefaultRevision()) {
       return FALSE;
     }
 
@@ -1536,16 +1536,16 @@ function _node_revision_access(Node $node, $op = 'view', $account = NULL) {
     // different revisions so there is no need for a separate database check.
     // Also, if you try to revert to or delete the current revision, that's
     // not good.
-    if ($is_current_revision && (db_query('SELECT COUNT(vid) FROM {node_revision} WHERE nid = :nid', array(':nid' => $node->nid))->fetchField() == 1 || $op == 'update' || $op == 'delete')) {
+    if ($node->isDefaultRevision() && (db_query('SELECT COUNT(vid) FROM {node_revision} WHERE nid = :nid', array(':nid' => $node->nid))->fetchField() == 1 || $op == 'update' || $op == 'delete')) {
       $access[$cid] = FALSE;
     }
     elseif (user_access('administer nodes', $account)) {
       $access[$cid] = TRUE;
     }
     else {
-      // First check the access to the current revision and finally, if the
-      // node passed in is not the current revision then access to that, too.
-      $access[$cid] = node_access($op, $node_current_revision, $account) && ($is_current_revision || node_access($op, $node, $account));
+      // First check the access to the default revision and finally, if the
+      // node passed in is not the default revision then access to that, too.
+      $access[$cid] = node_access($op, node_load($node->nid), $account, $langcode) && ($node->isDefaultRevision() || node_access($op, $node, $account, $langcode));
     }
   }
 
