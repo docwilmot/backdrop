@@ -9,13 +9,6 @@
  * Defines a common interface for all entity objects.
  */
 interface EntityInterface {
-   /**
-   * Indicates whether this is the default revision.
-   *
-   * @var bool
-   */
-  public $isDefaultRevision = TRUE;
-
   /**
    * Constructs a new entity object.
    *
@@ -130,6 +123,13 @@ interface EntityInterface {
  * Defines a base entity class.
  */
 abstract class Entity implements EntityInterface {
+   /**
+   * Indicates whether this is the default revision.
+   *
+   * @var bool
+   */
+  public $isDefaultRevision = TRUE;
+
   /**
    * Constructs a new entity object.
    */
