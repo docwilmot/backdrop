@@ -1545,7 +1545,7 @@ function _node_revision_access(Node $node, $op = 'view', $account = NULL) {
     else {
       // First check the access to the default revision and finally, if the
       // node passed in is not the default revision then access to that, too.
-      $access[$cid] = node_access($op, node_load($node->nid), $account, $langcode) && ($node->isDefaultRevision() || node_access($op, $node, $account, $langcode));
+      $access[$cid] = node_access($op, node_load($node->nid), $account) && ($node->isDefaultRevision() || node_access($op, $node, $account));
     }
   }
 
