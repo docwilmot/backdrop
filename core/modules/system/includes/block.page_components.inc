@@ -3,7 +3,7 @@
 /**
  * PageComponents extends Block
  *
- * This class allows us to display the page title, local task tabs, 
+ * This class allows us to display the page title, local task tabs,
  * local actions links, and messages in a block.
  */
 class PageComponents extends Block {
@@ -44,9 +44,18 @@ class PageComponents extends Block {
   function form(&$form, &$form_state) {
     parent::form($form, $form_state);
     if ($this->childDelta == 'title_combo' || $this->childDelta == 'title') {
+      // In the case of using title as a block provide different instructions
+      // and direct the user to use this to change the markup of the block, but
+      // to edit the text of the title use the traditional node/%/edit form.
+      $form['title_display']['title_display'] = array(
+        '#type' => 'hidden',
+        '#default_value' => $this->settings['title_display'],
+      );
       $form['title_wrapper'] = array(
         '#type' => 'fieldset',
         '#title' => t('Page title'),
+        '#description' => t('Use this block form to change the position or the
+          markup of the title. To change the title of the page edit the page.'),
       );
       $form['title_wrapper']['title_tag'] = array(
         '#title' => t('Title tag'),

@@ -1877,7 +1877,6 @@ function system_regional_settings($form, &$form_state) {
   // Date settings:
   $zones = system_time_zones();
 
-  $form['#config'] = 'system.date';
   $form['locale'] = array(
     '#type' => 'fieldset',
     '#title' => t('Locale'),
@@ -1948,7 +1947,31 @@ function system_regional_settings($form, &$form_state) {
     '#description' => t('Only applied if users may set their own time zone.')
   );
 
-  return system_settings_form($form);
+  $form['actions']['#type'] = 'actions';
+  $form['actions']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save configuration'),
+  );
+  return $form;
+}
+
+/**
+ * Form submission handler for regional settings.
+ *
+ * @ingroup forms
+ * @see system_regional_settings()
+ */
+function system_regional_settings_submit($form, &$form_state) {
+  config('system.date')
+    ->set('default_country', $form_state['values']['site_default_country'])
+    ->set('first_day', $form_state['values']['date_first_day'])
+    ->set('default_timezone', $form_state['values']['date_default_timezone'])
+    ->set('user_configurable_timezones', $form_state['values']['configurable_timezones'])
+    ->set('user_empty_timezone_message', $form_state['values']['empty_timezone_message'])
+    ->set('user_default_timezone', $form_state['values']['user_default_timezone'])
+    ->save();
+  // Display status messages for this form.
+  backdrop_set_message(t('The configuration options have been saved.'));
 }
 
 /**
@@ -2058,14 +2081,14 @@ function system_urls_settings($form, &$form_state) {
     if ($conflict) {
       // $form_state['redirect'] needs to be set to the non-clean URL,
       // otherwise the setting is not saved.
-      $form_state['redirect'] = url('', array('query' => array('q' => '/admin/config/search/clean-urls')));
+      $form_state['redirect'] = url('', array('query' => array('q' => '/admin/config/urls/clean-urls')));
     }
   }
   // Show the clean URLs test form.
   else {
     backdrop_add_js(backdrop_get_path('module', 'system') . '/js/system.admin.js');
 
-    $form_state['redirect'] = url('admin/config/search/clean-urls');
+    $form_state['redirect'] = url('admin/config/urls/clean-urls');
     $form['clean_url_description'] = array(
       '#type' => 'markup',
       '#markup' => '<p>' . t('Use URLs like <code>example.com/user</code> instead of <code>example.com/?q=user</code>.'),
@@ -2074,7 +2097,7 @@ function system_urls_settings($form, &$form_state) {
     // clicking the 'Run the clean URL test' button.
     $form['clean_url_test_result'] = array(
       '#type' => 'markup',
-      '#markup' => '<p>' . t('Clean URLs cannot be enabled. If you are directed to this page or to a <em>Page not found (404)</em> error after testing for clean URLs, see the <a href="@handbook">online handbook</a>.', array('@handbook' => 'http://drupal.org/node/15365')) . '</p>',
+      '#markup' => '<p>' . t('Clean URLs cannot be enabled. If you are directed to this page or to a <em>Page not found (404)</em> error after testing for clean URLs, see the <a href="@url">online handbook</a>.', array('@url' => url('http://drupal.org/node/15365'))) . '</p>',
     );
     $form['actions'] = array('#type' => 'actions');
     $form['actions']['clean_url_test'] = array(
@@ -2092,7 +2115,7 @@ function system_urls_settings($form, &$form_state) {
     '#type' => 'checkbox',
     '#title' => t('Use HTTPS for canonical URLs'),
     '#default_value' => config_get('system.core', 'canonical_secure'),
-    '#description' => t('This option makes Backdrop use HTTPS protocol for generated canonical URLs. Please note: to get it working in mixed-mode (both secure and insecure) sessions, the variable "https" should be set to TRUE in your file <code>settings.php</code>' ),
+    '#description' => t('This option makes Backdrop use HTTPS protocol for generated canonical URLs. Please note: to get it working in mixed-mode (both secure and insecure) sessions, the variable <code>https<code> should be set to <code>TRUE<code> in your file <code>settings.php</code>' ),
   );
 
   return system_settings_form($form);
@@ -2372,6 +2395,7 @@ function system_utf8mb4_convert_form($form, &$form_state) {
   $utf8mb4_tables_converted = state_get('database_utf8mb4_active', FALSE);
 
   $form['help'] = array(
+    '#type' => 'help',
     '#markup' => '<p>' . $requirements['description'] . '</p>',
   );
 
