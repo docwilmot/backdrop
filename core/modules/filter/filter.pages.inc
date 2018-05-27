@@ -220,18 +220,31 @@ function filter_format_editor_image_form($form, &$form_state, $format) {
   // Image library, very similar to Image URL
   global $base_url;
   $form['image']['library_all'] = array(
+    '#attributes' => array(
+      'data-editor-image-toggle' => t('Select image'),
+      'data-editor-image-library-base-url' => $base_url,
+    ),
     '#title' => t('Select image'),
-    '#description' => views_embed_view('image_library'),
+    '#parents' => array('image_library', 'src'),
+    '#type' => 'container',
+    '#weight' => -2,
+  );
+  $form['image']['library_all']['library_all_url'] = array(
+    '#title' => t('Select image'),
     '#type' => 'textfield',
     '#element_validate' => array('_filter_format_editor_link_url_validate'),
     '#placeholder' => '/example/image.jpg',
     '#default_value' => isset($values['src']) ? $values['src'] : NULL,
-    '#parents' => array('image_library', 'src'),
-    '#wrapper_attributes' => array(
-      'data-editor-image-toggle' => t('Select image'),
-      'data-editor-image-library-base-url' => $base_url,
-    ),
     '#weight' => -2,
+  );
+  $form['image']['library_all']['library_all_library'] = array(
+    '#value' => t('Select image'),
+    '#type' => 'submit',
+    '#submit' => array('filter_browse_image_form_redirect'),
+    '#ajax' => array(
+      'callback' => 'filter_ajax_form_open_dialog',
+    ),
+    '#weight' => -1,
   );
 
   // If no current value or an existing file exists, default to showing
@@ -311,6 +324,75 @@ function filter_format_editor_image_form($form, &$form_state, $format) {
   );
 
   return $form;
+}
+
+/**
+ * Form callback: Display a gallery of images.
+ */
+function filter_browse_image_form_redirect($form, &$form_state) {
+  $form_state['redirect'] = 'filter-gallery/' . $form_state['format']->format;
+}
+
+/**
+ * Form callback: Display a gallery of images.
+ */
+function filter_browse_image_form($form, &$form_state, $format= NULL) {
+  $form['image'] = array(
+    '#title' => t('Select image'),
+    '#markup' => views_embed_view('image_library'),
+    '#type' => 'markup',
+    '#weight' => -1,
+  );
+  $form['image_selected'] = array(
+    '#title' => t('Select image'),
+    '#type' => 'textfield',
+    '#weight' => -1,
+  );
+  $form['actions']['#type'] = 'actions';
+  $form['actions']['close_submit'] = array(
+    '#type' => 'submit',
+    '#submit' => array('filter_fsubmits'),
+    '#name' => 'filter_close',
+    '#value' => 'Select',
+    // '#ajax' => array(
+      // 'callback' => 'filter_format_editor_dialog_close',
+      // 'event' => 'click',
+    // ),
+  );
+
+  return $form;
+}
+function filter_fsubmits($form, &$form_state) {
+  dpm('mkmk');
+}
+
+/**
+ * AJAX handler that opens a form in a dialog.
+ */
+function filter_format_editor_dialog_close($form, &$form_state) {
+  dpm($form_state);
+  $dialog_selector = '#ggg';
+    $commands[] = ajax_command_close_dialog('#ggg');
+  return array(
+    '#type' => 'ajax',
+    '#commands' => $commands,
+  );
+}
+
+/**
+ * AJAX handler that opens a form in a dialog.
+ */
+function filter_ajax_form_open_dialog($form, &$form_state) {
+    // Get the dialog path as set in the redirect.
+    $gallery = backdrop_get_form('filter_browse_image_form');
+    $html = backdrop_render($gallery);
+      $title = 'popo';
+    $commands[] = ajax_command_open_dialog('#ggg', $title, $html, array('dialogClass' => 'filter-dialog', 'width' => '95%', 'maxWidth' => '600px'));
+
+  return array(
+    '#type' => 'ajax',
+    '#commands' => $commands,
+  );
 }
 
 /**

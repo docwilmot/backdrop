@@ -108,7 +108,9 @@
 
 /* Layout dialogs. */
 .layout-dialog {
-  max-width: 600px;
+  width: 95%;
+  max-width: 900px;
+  top: 10;
 }
 .layout-block-list {
   max-height: 300px;
