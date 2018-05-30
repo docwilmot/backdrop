@@ -199,7 +199,7 @@ Backdrop.behaviors.editorImageDialog = {
     }, 1);
     
     // Image library
-    var $libraryField = $('[data-editor-image-library-base-url]', context);
+    var $libraryField = $('[data-editor-image-library-base-url-two]', context);
 
     if ($libraryField.length){
       // Delegate this click event to an element outside of the view, so that

@@ -337,6 +337,11 @@ function filter_browse_image_form_redirect($form, &$form_state) {
  * Form callback: Display a gallery of images.
  */
 function filter_browse_image_form($form, &$form_state, $format= NULL) {
+  form_load_include($form_state, 'inc', 'filter', 'filter.pages');
+  global $base_url;
+  $form['#attributes'] = array(
+    'data-editor-image-library-base-url-two' => $base_url,
+  );
   $form['image'] = array(
     '#title' => t('Select image'),
     '#markup' => views_embed_view('image_library'),
@@ -354,10 +359,10 @@ function filter_browse_image_form($form, &$form_state, $format= NULL) {
     '#submit' => array('filter_fsubmits'),
     '#name' => 'filter_close',
     '#value' => 'Select',
-    // '#ajax' => array(
-      // 'callback' => 'filter_format_editor_dialog_close',
-      // 'event' => 'click',
-    // ),
+    '#ajax' => array(
+      'callback' => 'filter_format_editor_dialog_close',
+      'event' => 'click',
+    ),
   );
 
   return $form;
