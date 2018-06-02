@@ -199,16 +199,16 @@ Backdrop.behaviors.editorImageDialog = {
     }, 1);
     
     // Image library
-    var $libraryField = $('[data-editor-image-library-base-url-two]', context);
+    var $libraryField = $('[data-library-base-url]');
 
     if ($libraryField.length){
       // Delegate this click event to an element outside of the view, so that
       // the view can use ajax without breaking this event.
-      $('.form-item-image-library-src').on('click', '.image-library-choose-file', function(){
+      $('.browse-image-form').on('click', '.image-library-choose-file', function(){
 
         // Make this a relative URL to the image by stripping the base_url.
         var relativeImgSrc = $(this).find('img').attr('src')
-            .replace($libraryField.data('editor-image-library-base-url'), '');
+            .replace($libraryField.data('library-base-url'), '');
 
         $libraryField.find('input[type=text]').val(relativeImgSrc);
       });
@@ -226,6 +226,18 @@ Backdrop.behaviors.editorImageDialog = {
  */
 Backdrop.ajax.prototype.commands.editorDialogSave = function (ajax, response, status) {
   $(window).trigger('editor:dialogsave', [response.values]);
+};
+  
+/**
+ * Command to save the contents of an editor-provided dialog.
+ *
+ * This command does not close the open dialog. It should be followed by a call
+ * to Drupal.AjaxCommands.prototype.closeDialog. Editors that are integrated
+ * with dialogs must independently listen for an editor:dialogsave event to save
+ * the changes into the contents of their interface.
+ */
+Backdrop.ajax.prototype.commands.editorImageSave = function (ajax, response, status) {
+  $('input[name="attributes[src]"]').val(response.values.image_selected);
 };
   
 })(jQuery);
