@@ -218,6 +218,13 @@ function layout_menu() {
     'type' => MENU_CALLBACK,
   ) + $base;
 
+  $items['admin/structure/layouts/manage/%layout_tempstore/context/add'] = array(
+    'title' => 'Add context',
+    'page callback' => 'backdrop_get_form',
+    'page arguments' => array('layout_context_add_form', 4),
+    'type' => MENU_CALLBACK,
+  ) + $base;
+
   $items['admin/structure/layouts/manage/%layout_tempstore/condition/add'] = array(
     'title' => 'Add visibility condition',
     'page callback' => 'backdrop_get_form',
