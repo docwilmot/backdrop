@@ -340,6 +340,21 @@ function layout_settings_form($form, &$form_state, Layout $layout) {
     }
   }
 
+    dpm($contexts);
+  // Add in saved relationship contexts.
+  if (isset($layout->settings['relationships'])) {
+    $relationships = $layout->settings['relationships'];
+    foreach ($relationships as $relationship_key => $layout_relationship) {
+      $form['context_wrapper']['context']['required'][$relationship_key]['plugin'] = array(
+        '#type' => 'value',
+        '#value' => $relationship_key,
+      );
+      $form['context_wrapper']['context']['required'][$context_key]['label'] = array(
+        '#markup' => check_plain($relationship_key),
+      );
+    }
+  }
+
   $form['add_contexts'] = array(
     '#type' => 'submit',
     '#value' => t('Add contexts'),
@@ -487,7 +502,9 @@ function layout_settings_form_context_add($form, &$form_state) {
  * @ingroup forms
  */
 function layout_context_add_form($form, &$form_state, Layout $layout = NULL) {
+  form_load_include($form_state, 'inc', 'layout', 'layout.admin');
   /* @var Layout $layout */
+  $form_state['layout'] = $layout;
   $contexts = $layout->getContexts();
     // Get contexts from relationships
   $relationships = layout_context_get_relationships($contexts);
@@ -501,10 +518,14 @@ function layout_context_add_form($form, &$form_state, Layout $layout = NULL) {
       $context_options[$context_key] = $context_key;
     }
   }
-  $form['context_options'] = array(
+  $form['context'] = array(
     '#type' => 'select',
     '#options' => $context_options,
     '#default_value' => '',//$layout_context->plugin,
+  );
+  $form['contexts'] = array(
+    '#type' => 'value',
+    '#value' => $contexts,
   );
 
   $form['actions'] = array('#type' => 'actions');
@@ -512,13 +533,24 @@ function layout_context_add_form($form, &$form_state, Layout $layout = NULL) {
     '#type' => 'submit',
     '#value' => t('Add context'),
     '#ajax' => array(
-      'callback' => 'layout_ajax_form_save_dialog',
+      'callback' => 'layout_ajax_form_save_dialog', // todo use layout_ajax_form_save_dialog instead
     ),
     '#submit' => array(
       'layout_context_add_submit',
     ),
   );
   return $form;
+}
+
+function layout_ajax_context_add_save_dialog($form, $form_state) {
+  $commands = array();
+  $commands[] = ajax_command_close_modal_dialog();
+
+
+  return array(
+    '#type' => 'ajax',
+    '#commands' => $commands,
+  );
 }
 
 /**
@@ -529,56 +561,15 @@ function layout_context_add_form($form, &$form_state, Layout $layout = NULL) {
 function layout_context_add_submit($form, &$form_state) {
   /* @var Layout $layout */
   $layout = $form_state['layout'];
-  /* @var Block $block */
-  $block = $form_state['block'];
-  /* @var LayoutMenuItem $menu_item */
-  $menu_item = $form_state['menu_item'];
+  $context = $form_state['values']['context'];
 
-  if (!isset($form_state['handler'])) {
-    return;
-  }
-  /* @var LayoutAccess $handler */
-  $handler = $form_state['handler'];
-  $handler->formSubmit($form, $form_state);
-  if (!empty($handler->is_new)) {
-    $handler->is_new = FALSE;
-    if ($menu_item) {
-      $menu_item->conditions[] = $handler;
-    }
-    elseif ($block) {
-      $block->conditions[] = $handler;
-    }
-    else {
-      $layout->conditions[] = $handler;
-    }
-  }
-  if ($menu_item) {
-    layout_set_layout_tempstore($menu_item, 'menu_item');
-  }
-  else {
-    layout_set_layout_tempstore($layout);
-  }
+  $layout->settings['relationships'][$context] = $form_state['values']['contexts'][$context]->plugin;
+  layout_set_layout_tempstore($layout);
 
-  // Update the portion of the page for menu item access.
-  if ($menu_item) {
-    $form_state['ajax_rebuild_form'] = 'layout_menu_item_form';
-    $form_state['ajax_rebuild_args'] = array($menu_item);
-    $form_state['ajax_update'] = array('conditions');
-    $form_state['redirect'] = 'admin/structure/layouts/menu/' . $menu_item->name;
-  }
-  // Blocks return to the dialog/page for editing that block.
-  elseif ($block) {
-    $renderer_name = isset($layout->in_progress['renderer_name']) ? $layout->in_progress['renderer_name'] : 'editor';
-    $renderer = layout_create_renderer($renderer_name, $layout);
-    $form_state['redirect'] = $renderer->getUrl('configure-block', $block->uuid);
-  }
-  // Set the portion of the page to be updated for layouts.
-  else {
-    $form_state['ajax_rebuild_form'] = 'layout_settings_form';
-    $form_state['ajax_rebuild_args'] = array($layout);
-    $form_state['ajax_update'] = array('conditions');
-    $form_state['redirect'] = 'admin/structure/layouts/manage/' . $layout->name . '/configure';
-  }
+  $form_state['ajax_rebuild_form'] = 'layout_settings_form';
+  $form_state['ajax_rebuild_args'] = array($layout);
+  $form_state['ajax_update'] = array('context_wrapper][context');
+  $form_state['redirect'] = 'admin/structure/layouts/manage/' . $layout->name . '/configure';
 }
 
 

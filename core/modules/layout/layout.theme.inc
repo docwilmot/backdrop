@@ -144,6 +144,8 @@ function theme_layout_menu_item_arguments_table($variables) {
  */
 function theme_layout_settings_context_table($variables) {
   $element = $variables['element'];
+  unset($element['overrides_path']);
+  unset($element['current_user']);
   $path = $element['#layout_path'];
   $parts = explode('/', $path);
   $header = array(
@@ -152,12 +154,20 @@ function theme_layout_settings_context_table($variables) {
   );
   $rows = array();
   foreach (element_children($element) as $key) {
-    $argument_parts = $parts;
-    $argument_parts[$key] = '<strong>' . $argument_parts[$key] . '</strong>';
-    $row = array();
-    $row[] = t('Position @index:', array('@index' => $key + 1)) . ' ' . implode('/', $argument_parts);
-    $row[] = backdrop_render($element[$key]);
-    $rows[] = $row;
+    if (is_numeric($key)) {
+      $argument_parts = $parts;
+      $argument_parts[$key] = '<strong>' . $argument_parts[$key] . '</strong>';
+      $row = array();
+      $row[] = t('Position @index:', array('@index' => $key + 1)) . ' ' . implode('/', $argument_parts);
+      $row[] = backdrop_render($element[$key]);
+      $rows[] = $row;
+    }
+    else {
+      $row = array();
+      $row[] = $key;
+      $row[] = $key;
+      $rows[] = $row;
+    }
   }
   return theme('table', array(
     'header' => $header,
