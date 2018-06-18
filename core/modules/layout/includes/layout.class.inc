@@ -710,6 +710,20 @@ class Layout {
       }
     }
 
+    // Get layout relationships. 
+    if (!empty($this->settings['relationships'])) {
+      $allowed_relationships = array();
+      $relevant_relationships = layout_context_get_relationships($this->contexts);
+      $layout_relationships = $this->settings['relationships'];
+      // Build contexts from this relationship.
+      foreach ($relevant_relationships as $id => $relationship) {
+        if (in_array($id, $layout_relationships)) {
+          $allowed_relationships[$id] = $relationship;
+        }
+      }
+      layout_get_context_from_relationships($allowed_relationships, $this->contexts);
+    }
+
     // Add on the current user context, which is always available.
     if (!isset($this->contexts['current_user'])) {
       $this->contexts['current_user'] = layout_create_context('user', array(

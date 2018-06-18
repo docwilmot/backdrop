@@ -190,6 +190,7 @@ class LayoutRendererStandard {
         $required_contexts = $block->getRequiredContexts();
         if ($required_contexts) {
           $has_contexts = $this->layout->hasContexts($required_contexts);
+          dpm($this->layout->getContexts());
           if ($has_contexts) {
             $block->setContexts($this->layout->getContexts());
           }

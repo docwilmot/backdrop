@@ -340,7 +340,6 @@ function layout_settings_form($form, &$form_state, Layout $layout) {
     }
   }
 
-    dpm($contexts);
   // Add in saved relationship contexts.
   if (isset($layout->settings['relationships'])) {
     $relationships = $layout->settings['relationships'];

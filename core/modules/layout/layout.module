@@ -1818,6 +1818,10 @@ function layout_block_has_required_contexts(Layout $layout, $block_module, $bloc
  *   available, FALSE will be returned and no contexts will be set at all.
  */
 function layout_set_handler_contexts(array &$contexts, array $all_contexts, array $required_contexts, array $context_settings) {
+  dpm($contexts);
+  dpm($all_contexts);
+  dpm($required_contexts);
+  dpm($context_settings);
   foreach ($required_contexts as $required_context_key => $context_type) {
     // Use the configured context if available.
     if (isset($context_settings[$required_context_key])) {
