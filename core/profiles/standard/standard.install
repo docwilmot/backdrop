@@ -215,6 +215,25 @@ function standard_install() {
   );
   $page->save();
 
+  // Create an "Rocking" page node.
+  $page = new Node(
+    array(
+      'title' => st('This page rocks!'),
+      'body' => array(
+        LANGUAGE_NONE => array(
+          array(
+            'value' => st('This is a page that rocks! I wouldn;t delete it.'),
+          ),
+        ),
+      ),
+      'uid' => 1,
+      'status' => 1,
+      'promote' => 0,
+      'type' => 'page',
+    )
+  );
+  $page->save();
+
   // Create an "About" link in the main menu.
   $item = array(
     'link_path' => 'node/' . $page->nid,
