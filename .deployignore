@@ -1,11 +1,11 @@
 files
-files\**
+files/**
 settings.php
 modules
 sites
 themes
 layouts
-modules\**
-sites\**
-themes\**
-layouts\**
+modules/**
+sites/**
+themes/**
+layouts/**
