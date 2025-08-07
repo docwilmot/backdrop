@@ -66,10 +66,10 @@ interface EntityInterface {
   /**
    * Returns the URI elements of the entity.
    *
-   * @return
+   * @return array
    *   An array containing the 'path' and 'options' keys used to build the URI
-   *   of the entity, and matching the signature of url(). NULL if the entity
-   *   has no URI of its own.
+   *   of the entity, and matching the signature of url(). An empty array if the
+   *   entity has no URI of its own.
    */
   public function uri();
 
@@ -276,6 +276,24 @@ abstract class Entity extends stdClass implements EntityInterface {
    */
   public function bundle() {
     return $this->entityType();
+  }
+
+  /**
+   * Implements EntityInterface::label().
+   *
+   * @return string|null
+   *   The label of the entity, or NULL if there is no label defined.
+   */
+  public function label() {
+    $entity_info = entity_get_info($this->entityType());
+    $label = NULL;
+    if (isset($entity_info['label callback'])) {
+      $label = call_user_func($entity_info['label callback'], $this);
+    }
+    else if (isset($entity_info['entity keys']['label']))  {
+      $label = $this->{$entity_info['entity keys']['label']};
+    }
+    return $label;
   }
 
   /**
